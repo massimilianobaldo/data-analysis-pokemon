@@ -14,4 +14,4 @@ The six questions are:
 
 5. Can you build a Pokemon dream team?  
 
-> A team of 6 Pokemon that inflicts the most damage while remaining relatively impervious to any other team of 6 Pokemon.
+  > A team of 6 Pokemon that inflicts the most damage while remaining relatively impervious to any other team of 6 Pokemon.
