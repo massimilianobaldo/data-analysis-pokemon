@@ -1,0 +1,36 @@
+---
+title: "Analisi sul Dataset dei Pokemon"
+author: "Massimiliano Baldo"
+date: "22/8/2020"
+output: 
+  revealjs::revealjs_presentation:
+    theme: "night"
+    center: true
+    transition: "slide"
+    fig_width: 5
+    fig_height: 3
+    df_print: "paged"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduzione ai Pokemon
+
+
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
