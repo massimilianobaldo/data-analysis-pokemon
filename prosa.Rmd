@@ -1,0 +1,371 @@
+---
+title: "Prosa"
+author: "Massimiliano Baldo"
+date: "25/8/2020"
+output: ioslides_presentation
+fig_width: 10 
+fig_height: 8
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Analisi sul Dataset dei Pokemon
+
+## Introduzione
+Prima di iniziare a parlare dell'analisi, è necessario fare alcune premesse:
+
+- Nel set denominato "aux_set" sono presenti i moltiplicatori di danni in base alla mossa subita e al tipo del pokeomn difensore, questi dati eran necessari per la maggior parte delle domande di queste analisi.  
+
+- Nel set denominato "set" sono presenti pokemon alcuni pokemon che nel primo set non ci sono, pertanto per coerenza di dati, il set è filtrato fino alle generazioni presenti anche nell'aux_set.  
+
+- Nel dataset "set" non ci sono dati mancanti come nel primo, questo perchè le forme speciali di alcuni pokemon vengono gestite in maniera molto più ottimale (per questo motivo ci sono più pokemon rispetto al primo set).  
+
+```{r include=FALSE}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(modelr)
+
+## Set completo dei dati sui Pokemon
+set <- read.csv("./sets/Pokedex_Ver3.csv")
+
+## Set con le debolezze dei pokemon
+aux_set <- read.csv("./sets/dataset_pokemon.csv")
+
+set <- set %>%
+  filter(GENERATION <= 7)
+```
+
+## Prima Domanda:<br>Which type is the strongest overall? Which is the weakest? 
+
+### Creazione della Weak Table
+
+Essendo che abbiamo a disposizione i moltiplicatori di danni degli attachi sui pokemon, possiamo determinare quanto danno potrebbe ricevere un determinato tipo di pokemon se ricevesse un attacco di ogni tipo. 
+
+Possiamo far ciò filtrando tutti i pokemon ce hanno un solo tipo, eliminare tutti i doppioni così da avere una tabella che mostra le varie debolezze dei singoli tipi pokemon
+
+```{r}
+weak_table <- aux_set %>%
+  select(type1, type2, contains("against")) %>%
+  filter(type2 == "") %>%
+  distinct() %>% ## make only one type for row because are identicaly
+  select(-type2) %>%
+  rename(type = type1)
+
+head(weak_table)
+```
+
+### Somma dei Punti
+Ora sommiamo i diversi danni possibili che può ricevere un tipo e riordiniamoli
+
+```{r}
+sum <- weak_table %>%
+  select(-type) %>%
+  rowSums()
+
+weak_table <- weak_table %>%
+  select(-contains("against")) %>%
+  mutate(sum = sum) %>%
+  arrange(sum) %>%
+  rename(
+    Type = type,
+    "Weak Point" = sum
+  )
+
+head(weak_table, 1)
+tail(weak_table, 1)
+```
+
+Otteniamo che il tipo con un numero di danni è il ferro, menre il pokemon con maggiori punti di danni che può subire è quello di tipo ghiaccio
+
+## Seconda Domanda
+## Which double-type exisitng is the strongest overall? Which is the weakest? 
+
+Visto che i pokemon di rado hanno solo una tipologia di tipo, è interessante capire quale accopiata di tipi sia quella che può ricevere meno danno e quella più vulnerabile
+
+#### Creazione della Double Weak Table
+Come prima, creiamo il tipo la tabelle delle debolezze considerando ora anche il secondo tipo
+```{r}
+double_weak_table <- aux_set %>%
+  select(type1, type2, contains("against")) %>%
+  filter(type2 != "") %>%
+  distinct()
+```
+
+### Somma dei Punti
+Rieseguiamo le stesse operazioni di prima per conteggiare i danni e riordinarli 
+```{r}
+sum <- double_weak_table %>%
+  select(-contains("type")) %>%
+  rowSums()
+
+double_weak_table %>%
+  select(-contains("against")) %>%
+  mutate(sum = sum) %>%
+  arrange(sum) %>%
+  rename(
+    "Type 1" = type1,
+    "Type 2" = type2,
+    "Weak Point" = sum
+  )
+```
+
+L'accoppiata con meno danni che può subire è Ferro-Fata (sarà importante da ricordare) mentre quella più debole è Roccia-Ghiaccio. Ahimè, avere Auorus in squadra è molto svantaggioso.
+
+## Terza Domanda 
+## Which type is the most likely to be a legendary Pokemon? 
+Da parte della community c'è sempre stato un fomento per i pokemon leggendari a tal punto che molti giocatori sceglievano una versione del gioco piuttosto che un'altra solo per avere quel pokemon leggendario.
+
+Cerchiamo allora di capire quale  siano i più frequqnti tipi di pokemon leggendari e di ipotizzare se in una prossima uscita di un gioco pokemon ci sarà un pokemon con i tipi individuati.
+
+## Ricerca dei pokemon leggendari
+```{r}
+legendary <- set %>%
+  select(NAME, TYPE1, TYPE2, LEGENDARY) %>%
+  filter(LEGENDARY == TRUE) %>%
+  distinct() ## necessario poichè alucni pokemon come Deoxsy cambiano forma ma non tipo
+```
+
+### Trovare il Tipo che risulta più frequente
+```{r}
+t1 <- as.data.frame(table(legendary$TYPE1)) 
+t2 <- as.data.frame(table(legendary$TYPE2, exclude = "")) 
+
+# Il full join serve perchè si ha due tabelle distinite e vogliamo vedere i valori accoppiati, 
+# così da poterli sommare
+legendary_type_sum <- full_join(t1, t2, by = "Var1") %>%
+  select(-Var1) %>%
+  rowSums()
+
+t1 %>%
+  rename(Type = Var1) %>%
+  select(-Freq) %>%
+  mutate(Freq = legendary_type_sum) %>%
+  arrange(-Freq)
+```
+
+Abbiamo trovato che i tipi più frequenti tra i pokemon leggendari sono il tipo Psico e quello Drago.
+
+### Verifica
+Verifichiamo i dati ottenuti poichè il setticismo non è mai poco.
+```{r}
+legendary %>%
+  filter(TYPE1 == "Psychic" | TYPE2 == "Psychic")
+```
+
+
+## Quarta Domanda 
+## How does height and weight of a Pokemon correlate with its various base stats? 
+Una aspetto importante dei pokemon è l'evoluzione, non solo cambia l'aspetto fisico ma ne aumenta anche le statistiche di lotta. 
+
+```{r fig, fig.height = 5, fig.width = 10, fig.align = "center"}
+library(corrplot)
+
+par(mfrow=c(2,1))
+# Correlazione tra altezza e gli stati
+corrplot(cor(set$HEIGHT, set[, c(16:21)]),
+  method = "number",
+  type = "upper", # show only upper side
+)
+# Correlazione tra peso e gli stati
+corrplot(cor(set$WEIGHT, set[, c(16:21)]),
+  method = "number",
+  type = "upper",
+)
+```
+
+
+Dai grafici capiano che non esiste una correlazione lineare tra l'atezza e il peso verso le statistiche base del pokeomn. 
+
+Proviamo con una quadratica
+```{r}
+quad_height <- set[, c(14)] ^ 2
+quad_weight <- set[, c(15)] ^ 2
+
+par(mfrow=c(2,1))
+
+corrplot(cor(quad_height, set[, c(16:21)]),
+  method = "number",
+  type = "upper"
+)
+
+corrplot(cor(quad_weight, set[, c(16:21)]),
+  method = "number",
+  type = "upper"
+)
+
+```
+
+Anche con una correlazione quadratica abbiam dei valori molto più piccoli (vicini al 0.2), pertanto non esiste effettivamente una correlazione quadratica.
+
+Utlima osservazione, proviam con il log
+```{r fig.height = 5, fig.width = 10, fig.align = "center"}
+log_height <- set[, c(14)] %>% log()
+log_weight <- set[, c(15)] %>% log()
+
+par(mfrow=c(2,1))
+corrplot(cor(log_height, set[, c(16:21)]),
+  method = "number",
+  type = "upper"
+)
+corrplot(cor(log_weight, set[, c(16:21)]),
+  method = "number",
+  type = "upper" 
+)
+
+```
+
+In questo caso abbiam che sia per il peso che per l'altezza c'è una correlazione: infatti abbiam che i primi 3 stats, ovvero hp atk e def, hanno una corelazione sopra il 0.5.
+
+```{r fig.height = 5, fig.width = 15, fig.align = "center"}
+library(ggpubr)
+
+height_plot <- ggplot(data = set, mapping = aes(log_height, ATK)) +
+  geom_point() +
+  geom_smooth(method = "loess", formula = "y ~ x")
+
+weight_plot <- ggplot(data = set, mapping = aes(log_weight, ATK)) +
+  geom_point() +
+  geom_smooth(method = "loess", formula = "y ~ x")
+
+ggarrange(height_plot, weight_plot, ncol = 2, nrow = 1, align = "h")
+```
+
+
+
+## Ultima Domanda
+## Can you build a Pokemon dream team? A team of 6 Pokemon that inflicts the most damage while remaining relatively impervious to any other team of 6 Pokemon.
+Ogni qual volta si inzia un gioco pokemon, ci si chiede quale possa essere la migliore squadra.  
+Cerchiamo di usare la scienza dei dati per poter dare una risposta effettiva a questa domanda. 
+
+
+```{r}
+# Cerchiamo una combinazione di pokemon la quale abbia una ampia "copertura" dai vari attacchi
+# Dobbiamo considerare le debolezze e moltiplicarle tra loro
+  
+best_candidates <- aux_set %>%
+  select(name, contains("against"))
+
+## Selezionare quelli che hanno presente almeno un zero nelle colonne delle debolezze
+
+ best_candidates<- best_candidates %>%
+  filter(rowSums(best_candidates == 0) > 0)
+  
+```
+
+
+```{r}
+
+## Scegliere quello che ha la somma più bassa
+best_candidates <- best_candidates %>%
+  rowwise() %>%
+  mutate(Sum = sum(c_across("against_bug":"against_water"))) %>%
+  arrange(Sum)
+
+# Mawile
+dream_team <- head(best_candidates, 1)
+  
+```
+
+```{r}
+## Da lui, cercare un altro pokemon che compensi le debolezze del primo
+any(best_candidates$against_ground %in% 0)
+
+new_member <- best_candidates %>%
+  filter(against_ground == 0) %>%
+  arrange(Sum) %>%
+  head(1)
+
+# Skarmory
+dream_team <- rbind(dream_team, new_member)
+
+```
+
+```{r}
+any(best_candidates$against_fire %in% 0)
+any(best_candidates$against_fire %in% 0.5)
+
+new_member <- best_candidates %>%
+  filter(against_fire == 0.5) %>%
+  arrange(Sum) %>%
+  head(1)
+
+# Marill -> Azumarill
+dream_team <- rbind(dream_team, new_member)
+
+```
+
+```{r}
+any(best_candidates$against_electric %in% 0)
+
+new_member <- best_candidates %>%
+  filter(against_electric == 0) %>%
+  arrange(Sum) %>%
+  head(1)
+
+# Steelix
+dream_team <- rbind(dream_team, new_member)
+
+```
+
+```{r}
+any(best_candidates$against_fight %in% 0)
+
+new_member <- best_candidates %>%
+  filter(against_fight == 0) %>%
+  arrange(Sum) %>%
+  head(1)
+
+# Honedge --> Aegislash
+dream_team <- rbind(dream_team, new_member)
+
+```
+
+```{r}
+any(best_candidates$against_dark %in% 0.5)
+# ritorna Mawile, che abbiam già in squadra
+
+new_member <- best_candidates %>%
+  filter(against_water == 0.5) %>%
+  arrange(Sum) %>%
+  head(2)  ## Sarebbe Dialga, però considerare pokemon leggendari nella ricerca non è funzionale al fine di tale, pertanto usaim il secondo che è anche uno starter
+
+# Empoleon
+dream_team <- rbind(dream_team, new_member[2, ])
+
+final_team <- aux_set %>%
+  filter(name %in% dream_team$name)  %>%
+  select(name, type1, type2, hp, attack, defense, speed, sp_attack, sp_defense)
+
+head(final_team)
+
+```
+
+Abbiam raggiunto un team ideale, ma per correttezza è giusto mettere le evoluzione finali dei pokemon  
+
+```{r}
+# Usiam le evoluzioni finali
+
+final_team[1,] <-aux_set %>%
+  select(name, type1, type2, hp, attack, defense, speed, sp_attack, sp_defense) %>%
+  filter(name == "Azumarill")
+
+final_team[6,] <-aux_set %>%
+  select(name, type1, type2, hp, attack, defense, speed, sp_attack, sp_defense) %>%
+  filter(name == "Aegislash")
+
+final_team
+
+```
+
+
+Il team finale è un buon team attaccante ed un ottimo team difensivo, ma non è il migliore.
+Effettivamente non esiste una squadra ottimale, esistono squadre competitive usate nei tornei ma anche quelle sono le più diverse.
+Pertanto, no non si può creare un dream team oggettivo, e forse è propio per questo che un qualsiasi team può essere "il migliore".
+
+
+
+
