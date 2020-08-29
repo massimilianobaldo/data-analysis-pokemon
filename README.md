@@ -16,8 +16,10 @@ The six questions are:
 
   > A team of 6 Pokemon that inflicts the most damage while remaining relatively impervious to any other team of 6 Pokemon.
 
-All the sets used in this analysis are in the directory called [sets](https://github.com/massimilianobaldo/data-analysis-pokemon/tree/master/sets)
+All the sets used in this analysis are in the directory called [sets](https://github.com/massimilianobaldo/data-analysis-pokemon/tree/master/sets).
 
-The real analysis is written in RMarkdown in the file called [prosa.Rmd](https://github.com/massimilianobaldo/data-analysis-pokemon/tree/master/prosa.Rmd), so you can follow the code using RStudio
+The real analysis is written in RMarkdown in the file called [prosa.Rmd](https://github.com/massimilianobaldo/data-analysis-pokemon/tree/master/prosa.Rmd), so you can follow the code using RStudio.
 
-By the way, all the files are written in italian for the presentation but I have already prepared the file in english
+Otherwise, you can the html documento [prosa.html](https://github.com/massimilianobaldo/data-analysis-pokemon/tree/master/prosa.html) which is the pre-formatted analysis in a readabble way.
+
+By the way, all the files are written in italian for the presentation but I have already prepared the file in english.
