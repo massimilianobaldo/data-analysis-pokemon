@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduzione
 I Pokemon sono delle creature immaginarie che vivono a stretto contatto con gli umani.  
-Alcune volte sono impiegati nei lavori pubblici, altri nei conscorsi e inifine, l'amibito che interessa a noi, quello delle lotte.  
+Alcune volte sono impiegati nei lavori pubblici, altri nei concorsi e infine, l'ambito che interessa a noi, quello delle lotte.  
 Le informazioni importanti da sapere sui pokemon sono le seguenti:
 
 - Ogni pokemon ha delle stastiche base (chiamate "stats") e includono:
@@ -34,14 +34,14 @@ Le informazioni importanti da sapere sui pokemon sono le seguenti:
 
 Prima di iniziare a parlare dell'analisi, è necessario fare alcune premesse per poter comprendere il codice scritto:
 
-- Nel set denominato "aux_set" sono presenti i moltiplicatori di danni in base alla mossa subita e al tipo del pokeomn difensore, questi dati eran necessari per la maggior parte delle domande di queste analisi.  
+- Nel set denominato "aux_set" sono presenti i moltiplicatori di danni in base alla mossa subita e al tipo del pokemon difensore, questi dati eran necessari per la maggior parte delle domande di queste analisi.  
 
 - Nel set denominato "set" sono presenti pokemon alcuni pokemon che nel primo set non ci sono, pertanto per coerenza di dati, il set è filtrato fino alle generazioni presenti anche nell'aux_set.  
 
 - Nel dataset "set" non ci sono dati mancanti come nel primo, questo perchè le forme speciali di alcuni pokemon vengono gestite in maniera molto più ottimale (per questo motivo ci sono più pokemon rispetto al primo set).  
 
 ## Obiettivo
-L'obiettivo di questa analisi è rispondere a delle domande prefissate che sono state mosse dalla mia curiosità sin da giovane.  
+L'obiettivo di questa analisi è rispondere a delle domande che sono state mosse dalla mia curiosità sin da giovane.  
 Tali domande sono le seguenti:
 
 - Qual è il tipo più forte nel complesso? Qual è il più debole? 
@@ -55,7 +55,7 @@ Tali domande sono le seguenti:
 - Si può costruire un dream team Pokemon?<br>Una squadra di 6 Pokemon che rimane relativamente impenetrabile a qualsiasi altra squadra di 6 Pokemon.
 
 ## Nota personale
-Sin da quando ero ragazzino i pokemon sono sempre stati una ammirazione per me, ho capito solo qualche anno fa qual fosse il vero potenziale di un pokemon e le possibili opportunità che il gioco stesso ti lasciava.  
+Sin da quando ero ragazzino i pokemon sono sempre stati una ammirazione per me, ho capito solo qualche anno fa qual fosse il vero potenziale di un pokemon e le possibili opportunità che il gioco stesso ti proponeva.  
 Spero che questa analisi possa far anche voi scoprire qualcosa in più di questo mondo immenso. 
 
 ```{r include=FALSE}
@@ -82,9 +82,9 @@ set <- set %>%
 
 ### Creazione della Weak Table
 
-Essendo che abbiamo a disposizione i moltiplicatori di danni degli attachi sui pokemon, possiamo determinare quanto danno potrebbe ricevere un determinato tipo di pokemon se ricevesse un attacco di ogni tipo. 
+Abbiamo a disposizione i moltiplicatori di danni degli attachi sui pokemon, possiamo determinare quanto danno potrebbe ricevere un determinato tipo di pokemon se ricevesse un attacco di ogni tipo. 
 
-Possiamo far ciò filtrando tutti i pokemon ce hanno un solo tipo, eliminare tutti i doppioni così da avere una tabella che mostra le varie debolezze dei singoli tipi pokemon
+Possiamo far ciò filtrando tutti i pokemon che hanno un solo tipo, eliminare tutti i doppioni così da avere una tabella che mostra le varie debolezze dei singoli tipi pokemon
 
 ```{r}
 weak_table <- aux_set %>%
@@ -128,16 +128,16 @@ head(weak_table, 1)
 tail(weak_table, 1)
 ```
 
-Otteniamo che il tipo con un numero di danni è il ferro, menre il pokemon con maggiori punti di danni che può subire è quello di tipo ghiaccio.
+Otteniamo che il tipo con un numero di danni è il ferro, mentre il pokemon con maggiori punti di danni che può subire è quello di tipo ghiaccio.
 
 ---
 
 ## Seconda Domanda:<br>Qual è il doppio tipo esistente nel complesso il più forte?<br>Qual è il più debole? 
 
-Visto che i pokemon di rado hanno solo una tipologia di tipo, è interessante capire quale accopiata di tipi sia quella che può ricevere meno danno e quella più vulnerabile
+Visto che i pokemon di rado hanno solo una tipologia di tipo, è interessante capire quale accoppiata di tipi sia quella che può ricevere meno danno e quella più vulnerabile
 
 ### Creazione della Double Weak Table
-Come prima, creiamo il tipo la tabelle delle debolezze considerando ora anche il secondo tipo
+Come prima, creiamo una seconda la tabelle delle debolezze considerando ora anche il secondo tipo dei pokemon
 
 ```{r}
 double_weak_table <- aux_set %>%
@@ -190,7 +190,7 @@ Ahimè, avere un pokemon come Auorus in squadra è molto svantaggioso.
 ---
 
 ## Terza Domanda:<br>Qual è il tipo più probabile che sia un Pokemon leggendario?  
-Da parte della community c'è sempre stato un fomento per i pokemon leggendari a tal punto che molti giocatori sceglievano una versione del gioco piuttosto che un'altra solo per avere quel pokemon leggendario.
+Da parte della community c'è sempre stata una enorme ammirazione per i pokemon leggendari a tal punto che molti giocatori sceglievano una versione del gioco piuttosto che un'altra solo per avere quel pokemon leggendario.
 
 Cerchiamo allora di capire quale  siano i più frequenti tipi di pokemon leggendari e di ipotizzare se in una prossima uscita di un gioco pokemon ci sarà un pokemon con i tipi individuati.
 
@@ -213,7 +213,7 @@ legendary
 t1 <- as.data.frame(table(legendary$TYPE1)) 
 t2 <- as.data.frame(table(legendary$TYPE2, exclude = "")) 
 
-# Il full join serve perchè si ha due tabelle distinite e vogliamo vedere i valori accoppiati, 
+# Il full join serve perchè si ha due tabelle distinte e vogliamo vedere i valori accoppiati, 
 # così da poterli sommare
 legendary_type_sum <- full_join(t1, t2, by = "Var1") %>%
   select(-Var1) %>%
@@ -228,19 +228,11 @@ t1 %>%
 
 Abbiamo trovato che i tipi più frequenti tra i pokemon leggendari sono il tipo Psico e quello Drago.
 
-### Verifica
-Verifichiamo i dati ottenuti poichè il setticismo non è mai poco.
-
-```{r}
-legendary %>%
-  filter(TYPE1 == "Psychic" | TYPE2 == "Psychic")
-```
-
 ---
 
 ## Quarta Domanda:<br>Come si correla l'altezza e il peso di un Pokemon con le sue varie statistiche di base?  
-Una aspetto importante dei pokemon è l'evoluzione, non solo cambia l'aspetto fisico ma ne aumenta anche le statistiche di lotta.  
-Effettivamente, esiste una sorte di correlazione tra l'aumento di peso e di altezza con gli stats?
+Un' aspetto importante dei pokemon è l'evoluzione, non solo cambia l'aspetto fisico ma ne aumenta anche le statistiche di lotta.  
+Effettivamente, esiste una sorta di correlazione tra l'aumento di peso e di altezza con gli stats?
 
 ```{r fig.height = 5, fig.width = 10, fig.align = "center"}
 par(mfrow=c(2,1))
@@ -257,13 +249,13 @@ corrplot(cor(set$WEIGHT, set[, c(16:21)]),
 ```
 
 Nel grafico superirore viene rappresentata la correlazione lineare tra il peso e gli stats, mentre in quello inferiore tra l'altezza e gli stats.  
-Si evince che non esiste una correlazione lineare tra l'atezza e il peso verso le statistiche base del pokeomn.  
+Si evince che non esiste una correlazione lineare tra l'altezza e il peso verso le statistiche base del pokeomn.  
 Difatti si hanno tutti i valori intorno allo zero, ovvero assenza di correlazione.  
 
 Proviamo a verificare se magari esiste una correlazione di tipo quadratica.  
 
 ```{r fig.height = 5, fig.width = 10, fig.align = "center"}
-# Creiamo i quadrati delle altezze e dei pesi e valutiamo se esiste una corrlezione lineare tra gli stats
+# Creiamo i quadrati delle altezze e dei pesi e valutiamo se esiste una correlazione lineare tra gli stats
 quad_height <- set[, c(14)] ^ 2
 quad_weight <- set[, c(15)] ^ 2
 
@@ -281,9 +273,9 @@ corrplot(cor(quad_weight, set[, c(16:21)]),
 
 ```
 
-Anche con una correlazione quadratica abbiam dei valori molto più piccoli (vicini al 0.2), pertanto non esiste effettivamente una correlazione quadratica.
+Anche con una correlazione quadratica abbiamo dei valori molto più piccoli (vicini al 0.2), pertanto non esiste effettivamente una correlazione quadratica.
 
-Utlima osservazione, proviam con una funzione logaritmica
+Utlima osservazione, proviamo con una funzione logaritmica
 
 ```{r fig.height = 5, fig.width = 10, fig.align = "center"}
 log_height <- set[, c(14)] %>% log()
@@ -301,7 +293,7 @@ corrplot(cor(log_weight, set[, c(16:21)]),
 
 ```
 
-In questo caso abbiam che sia per il peso che per l'altezza c'è una correlazione: infatti abbiam che i primi 3 stats, ovvero hp atk e def, hanno una corelazione sopra il 0.5.
+In questo caso otteniamo che sia per il peso che per l'altezza c'è una correlazione: infatti si nots che i primi 3 stats, ovvero hp atk e def, hanno una correlazione sopra il 0.5.
 
 ```{r fig.height = 5, fig.width = 15, fig.align = "center"}
 library(ggpubr)
@@ -317,17 +309,17 @@ weight_plot <- ggplot(data = set, mapping = aes(log_weight, ATK)) +
 ggarrange(height_plot, weight_plot, ncol = 2, nrow = 1, align = "h")
 ```
 
-Questi grafici dimostrano che esiste una corrlezione diretta tra le altezze e i pesi sottoposti in forma logaritmica, e in questo caso l'attacco del pokemon.  
-Possiam dedurre alla fine che essite una correlazione logaritmica tra peso e altezza con l'attacco, la difesa e infine i punti salute. 
+Questi grafici dimostrano che esiste una correlazione diretta tra le altezze e i pesi sottoposti in forma logaritmica, e in questo caso l'attacco del pokemon.  
+Possiamo dedurre alla fine, che esiste una correlazione logaritmica tra peso e altezza con l'attacco, la difesa ed infine, i punti salute. 
 
 ---
 
 ## Ultima Domanda:<br>Si può costruire un dream team Pokemon?<br>Una squadra di 6 Pokemon che rimane relativamente impenetrabile a qualsiasi altra squadra di 6 Pokemon.
 
-Ogni qual volta si inzia un gioco pokemon, ci si chiede quale possa essere la migliore squadra.  
+Ogni qual volta si inizia un gioco pokemon, ci si chiede quale possa essere la migliore squadra.  
 Cerchiamo di usare la scienza dei dati per poter dare una risposta effettiva a questa domanda. 
-Secondo i forum per le lotte pokemon in competitiva, per creare una squadra bisogna partitre da un pokemon e analizzare le sue debolezze.  
-Cercare un'altro pokemon il quale sia immune oppure sia poco vulnerabile alle debolezze del primo, e ripetere questo fino ad avere la squadra di 6 pokemon.  
+Secondo i forum per le lotte pokemon in competitiva, per creare una squadra bisogna partire da un pokemon e analizzare le sue debolezze.  
+Cercare un'altro pokemon, il quale sia immune oppure sia poco vulnerabile alle debolezze del primo, e ripetere questo fino ad avere la squadra di 6 pokemon.  
 
 
 ```{r}
@@ -434,12 +426,12 @@ dream_team
 
 ```{r}
 any(best_candidates$against_dark %in% 0.5)
-# ritorna Mawile, che abbiam già in squadra
+# ritorna Mawile, che abbiamo già in squadra
 
 new_member <- best_candidates %>%
   filter(against_water == 0.5) %>%
   arrange(Sum) %>%
-  head(2)  ## Sarebbe Dialga, però considerare pokemon leggendari nella ricerca non è funzionale al fine di tale, pertanto usaim il secondo che è anche uno starter
+  head(2)  ## Sarebbe Dialga, però considerare pokemon leggendari nella ricerca non è funzionale al fine di tale, pertanto usaimo il secondo che è anche uno starter
 
 # Empoleon
 dream_team <- rbind(dream_team, new_member[2, ])
@@ -470,8 +462,9 @@ final_team
 ```
 
 Il team finale è un buon team attaccante ed un ottimo team difensivo, ma non è il migliore.
-Effettivamente non esiste una squadra ottimale, esistono squadre competitive usate nei tornei ma anche quelle sono le più diverse.
-Pertanto, no non si può creare un dream team oggettivo, e forse è propio per questo che un qualsiasi team può essere "il migliore".
+Effettivamente non esiste una squadra ottimale, esistono squadre competitive usate nei tornei ma anche quelle sono le più disparate
+Pertanto, la risposta alla domanda finale è che non si può creare un dream team oggettivo, dipende molto anche da quale pokemon si inizia a reclutare e soprattutto quali altri pokemon aggiungere alla squadra per compensare le vulnerabilità del primo.
+Alla fine, forse è propio per questo che un qualsiasi team può essere considerato "il migliore".
 
 
 
