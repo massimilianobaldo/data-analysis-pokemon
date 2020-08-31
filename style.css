@@ -1,0 +1,36 @@
+blockquote {
+  background: #f9f9f9;
+  border-left: 5px solid #ccc;
+  margin: 0.75em 10px;
+  padding: 0.5em 0.75em;
+}
+
+blockquote {
+    text-align: left;
+}
+
+footer {
+  text-align: right;
+}
+
+img.centered {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+table.kable_wrapper {
+  width: 80%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+img.dream_team {
+  position: absolute;
+  left: 50%;
+  top: 70%;
+  transform: translate(-50%, -55%);
+}
