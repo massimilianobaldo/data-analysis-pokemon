@@ -1,7 +1,7 @@
 ---
 title: "Analisi sul Dataset dei Pokémon"
 author: "Massimiliano Baldo"
-date: "22/8/2020"
+date: "2/09/2020"
 output:
   slidy_presentation:
     incremental: yes
@@ -167,11 +167,13 @@ knitr::kables(
 legendary <- set %>%
   select(NAME, TYPE1, TYPE2, LEGENDARY) %>%
   filter(LEGENDARY == TRUE) %>%
-  distinct() 
+  distinct() ## necessario poichè alucni pokemon come Deoxsy cambiano forma ma non tipo
 
 t1 <- as.data.frame(table(legendary$TYPE1)) 
 t2 <- as.data.frame(table(legendary$TYPE2, exclude = "")) 
 
+# Il full join serve perchè si ha due tabelle distinte e vogliamo vedere i valori accoppiati, 
+# così da poterli sommare
 legendary_type_sum <- full_join(t1, t2, by = "Var1") %>%
   select(-Var1) %>%
   rowSums()
@@ -229,14 +231,14 @@ ggplot(na.omit(legendary_type), aes(x=Type, y=Freq, size=Freq, color=Type)) +
 library(corrplot)
 
 par(mfrow=c(2,1))
-
+# Correlazione tra altezza e gli stati
 corrplot(cor(set$HEIGHT, set[, c(16:21)]),
   method = "number",
   type = "upper", 
   title = "Altezza",
   mar = c(1, 1, 1, 1)
 )
-
+# Correlazione tra peso e gli stati
 corrplot(cor(set$WEIGHT, set[, c(16:21)]),
   method = "number",
   type = "upper",
@@ -377,7 +379,7 @@ dream_team <- rbind(dream_team, new_member)
 new_member <- best_candidates %>%
   filter(against_water == 0.5) %>%
   arrange(Sum) %>%
-  head(2)  
+  head(2) ## Sarebbe Dialga, però considerare pokemon leggendari nella ricerca non è funzionale al fine di tale, pertanto usaimo il secondo che è anche uno starter 
 
 dream_team <- rbind(dream_team, new_member[2, ])
 
@@ -421,7 +423,7 @@ knitr::kable(df_image %>% select(-c0),
 
 ```
 
-## È effettivamnte un dream team?
+## È effetivamente un dream team?
 
 ```{r fig.width=10, out.extra='class="centered"'}
 library(plyr)
