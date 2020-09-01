@@ -349,7 +349,7 @@ knitr::kable(dream_team %>% select(-name, -Sum), col.names = gsub("against_", ""
 ```
 
 ![Mawile](./img/mawile.png){.dream_team style="left: 30%;"}
-![Skarmory](./img/skarmory.png){.dream_team style="left: 80%;"}
+![Skarmory](./img/skarmory.png){.dream_team style="left: 70%;"}
 
 ## Team finale
 ```{r}
@@ -410,11 +410,15 @@ knitr::kable(final_team, align = "c") %>%
   kable_paper(bootstrap_options = "striped", full_width = F)
 ```
 
-```{r out.extra='class="kable_wrapper"'}
-knitr::kable(df_image %>% select(-c0), align = "c", col.names = NULL) %>%
-    column_spec(1, image = spec_image(c("./img/azumarill.png", "./img/steelix.png"), 375, 375)) %>%
-    column_spec(2, image = spec_image(c("./img/skarmory.png", "./img/mawile.png"), 375, 375)) %>%
-    column_spec(3, image = spec_image(c("./img/empoleon.png", "./img/aegislash.png"), 375, 375))
+```{r}
+knitr::kable(df_image %>% select(-c0), 
+             align = "c", 
+             col.names = NULL, 
+             table.attr = "class=\"kable_wrapper\" style=\"top: 75%;\"") %>%
+    column_spec(1, image = spec_image(c("./img/azumarill.png", "./img/steelix.png"), 475, 475)) %>%
+    column_spec(2, image = spec_image(c("./img/skarmory.png", "./img/mawile.png"), 475, 475)) %>%
+    column_spec(3, image = spec_image(c("./img/empoleon.png", "./img/aegislash.png"), 475, 475))
+
 ```
 
 ## È effettivamnte un dream team?
@@ -438,9 +442,9 @@ dream_team %>%
 
 * Kaggle
 
-  - [Primo Set]()
+  - [Dataset con i Moltiplicatori di Danno](https://www.kaggle.com/rounakbanik/pokemon)
   
-  - [Secondo]() 
+  - [Dataset Completo](https://www.kaggle.com/takamasakato/pokemon-all-status-data) 
 
 * [Pokèdex](https://www.pokemon.com/it/pokedex/)
 
